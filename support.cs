@@ -26,8 +26,16 @@ function BTZ_posInBox3D(%position, %boxPos, %boxScale)
     return false;
 }
 
-function BTZ_getBoxOverlap(%box_posX0, %box_posY0, %box_posZ0, %box_scale0, %box_posX1, %box_posY1, %box_posZ1, %box_scale1)
+function BTZ_getBoxOverlap(%box_pos0, %box_scale0, %box_pos1, %box_scale1)
 {
+	%box_posX0 = getWord(%box_pos0, 0);
+	%box_posY0 = getWord(%box_pos0, 1);
+	%box_posZ0 = getWord(%box_pos0, 2);
+
+	%box_posX1 = getWord(%box_pos1, 0);
+	%box_posY1 = getWord(%box_pos1, 1);
+	%box_posZ1 = getWord(%box_pos1, 2);
+	
     %x = (mAbs(%box_posX0 - %box_posX1) * 2) <= (getWord(%box_scale0, 0) + getWord(%box_scale1, 0));
     %y = (mAbs(%box_posY0 - %box_posY1) * 2) <= (getWord(%box_scale0, 1) + getWord(%box_scale1, 1));
     %z = (mAbs(%box_posZ0 - %box_posZ1) * 2) <= (getWord(%box_scale0, 2) + getWord(%box_scale1, 2));

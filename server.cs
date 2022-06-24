@@ -8,6 +8,8 @@ $BTZ::SavePath = "config/server/BotToggleZones.cs";
 //$BTZ::ZonePos[#]
 //$BTZ::ZoneScale[#]
 //$BTZ::ZoneObj[#]
+//	$BTZ::ZoneObj[#].occupants
+//$BTZ::ZoneSet[#]
 //$BTZ::NumZones
 
 function BTZ_load()
@@ -69,12 +71,14 @@ function BTZ_deleteAll()
 	{
 		$BTZ::ZoneObj[%i].occupants.delete();
 		$BTZ::ZoneObj[%i].delete();
+
 		$BTZ::ZoneSet[%i].delete();
 	}
 
 	//delete the relevant variables
 	deleteVariables("$BTZ::ZonePos*");
 	deleteVariables("$BTZ::ZoneScale*");
+	deleteVariables("$BTZ::ZoneSet*");
 	deleteVariables("$BTZ::ZoneObj*");
 
 	deleteVariables("$BTZ::NumZones");
@@ -154,8 +158,56 @@ function BTZ_addZone(%position, %scale)
 	$BTZ::NumZones++;
 }
 
-function BTZ_DeleteZone(%position, %scale)
+function BTZ_removeZone(%index)
 {
-	talk("wip");
+	$BTZ::ZoneObj[%index].occupants.delete();
+	$BTZ::ZoneObj[%index].delete();
+
+	%set = $BTZ::ZoneSet[%index];
+	%count = %set.getCount();
+	for(%i = 0; %i < %count; %i++)
+	{
+		%obj = %set.getObject(%i);
+		if(%obj.zoneIndex == %index)
+			%obj.zoneIndex = "";
+	}
+	%set.delete();
+
+	$BTZ::NumZones--;
+	%farIndex = $BTZ::NumZones - 1;
+
+	if($BTZ::NumZones < 0)
+		$BTZ::NumZones = 0;
+
+	if(%farIndex >= 0 && %index != %farIndex) //if we are not at the end of the array
+	{
+		$BTZ::ZoneObj[%index] = $BTZ::ZoneObj[%farIndex];
+		$BTZ::ZoneSet[%index] = $BTZ::ZoneSet[%farIndex];
+
+		$BTZ::ZonePos[%index] = $BTZ::ZonePos[%farIndex];
+		$BTZ::ZoneScale[%index] = $BTZ::ZoneScale[%farIndex];
+	}
+
+	$BTZ::ZoneObj[%farIndex] = "";
+	$BTZ::ZoneSet[%farIndex] = "";
+	$BTZ::ZonePos[%farIndex] = "";
+	$BTZ::ZoneScale[%farIndex] = "";
 }
 
+function BTZ_DeleteZone(%position, %scale)
+{
+	%compPos = %position;
+	%compScale = %scale;
+
+	for(%i = $BTZ::NumZones - 1; %i >= 0; %i--)
+	{
+		%box_pos = $BTZ::ZonePos[%i];
+		%box_scale = $BTZ::ZoneScale[%i];
+
+		if(BTZ_getBoxOverlap(%box_pos, %box_scale, %compPos, %compScale))
+		{
+			BTZ_removeZone(%i);
+			talk("removing zone #"@ %i);
+		}
+	}
+}
