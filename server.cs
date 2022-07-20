@@ -22,17 +22,25 @@ function BTZ_load()
 	{
 		%pos = $BTZ::ZonePos[%i];
 		%scale = $BTZ::ZoneScale[%i];
+		%triggerMultiplier = $BTZ::triggerMultiplier[%i];
 
-		BTZ_createZone(%i, %pos, %scale);
+		BTZ_createZone(%i, %pos, %scale, %triggerMultiplier);
 	}
+
+	talk("BTZ_LOADED");
 }
+
+schedule(0, 0, BTZ_load);
 
 function BTZ_save()
 {
-	//export variable,			SavePath,		append
-	export("$BTZ::NumZones",	$BTZ::SavePath, false);
-	export("$BTZ::ZonePos*",	$BTZ::SavePath, true );
-	export("$BTZ::ZoneScale*",	$BTZ::SavePath, true );
+	//export variable,					SavePath,		append
+	export("$BTZ::NumZones",			$BTZ::SavePath, false);
+	export("$BTZ::ZonePos*",			$BTZ::SavePath, true );
+	export("$BTZ::ZoneScale*",			$BTZ::SavePath, true );
+	export("$BTZ::triggerMultiplier*",	$BTZ::SavePath, true );
+
+	talk("BTZ_SAVED");
 }
 
 function BTZ_ToggleDebug()
@@ -45,6 +53,11 @@ function BTZ_ToggleDebug()
 
 	if(!$BTZ::Debug)
 	{
+		if(isFunction("Trigger", "setNetFlag"))
+		{
+			for(%i = 0; %i < $BTZ::NumZones; %i++)
+				$BTZ::ZoneObj[%i].setNetFlag(8, false);
+		}
 		BTZ_DebugSet.deleteAll();
 		return;
 	}
@@ -54,13 +67,19 @@ function BTZ_ToggleDebug()
 		%pos = $BTZ::ZonePos[%i];
 		%scale = $BTZ::ZoneScale[%i];
 		
-		%shape = new StaticShape() {
-			position = %pos;
-			scale = %scale;
-			dataBlock = "ND_SelectionBoxOuter";
-		};
-		%shape.setNodeColor("ALL","0 0 1 0.2");
-		BTZ_DebugSet.add(%shape);
+		if($BTZ::TriggerMultiplier[%i] > 1)
+		{
+			%shape = new StaticShape() {
+				position = %pos;
+				scale = %scale;
+				dataBlock = "ND_SelectionBoxOuter";
+			};
+			%shape.setNodeColor("ALL","0 0 1 0.2");
+			BTZ_DebugSet.add(%shape);
+		}
+
+		if(isFunction("Trigger", "setNetFlag"))
+			$BTZ::ZoneObj[%i].setNetFlag(8, true);
 	}
 }
 
@@ -80,6 +99,7 @@ function BTZ_deleteAll()
 	deleteVariables("$BTZ::ZoneScale*");
 	deleteVariables("$BTZ::ZoneSet*");
 	deleteVariables("$BTZ::ZoneObj*");
+	deleteVariables("$BTZ::TriggerMultiplier*");
 
 	deleteVariables("$BTZ::NumZones");
 
@@ -87,7 +107,7 @@ function BTZ_deleteAll()
 		BTZ_DebugSet.deleteAll();
 }
 
-function BTZ_createZone(%index, %position, %scale)
+function BTZ_createZone(%index, %position, %scale, %triggerMultiplier)
 {
 	talk("index: " @ %index);
 	%trigger = new Trigger()
@@ -103,8 +123,9 @@ function BTZ_createZone(%index, %position, %scale)
 		return;
 	}
 
+	%triggerMultiplier = mClampF(%triggerMultiplier, 1.0, 10000.0);
 	%trigger.setTransform(%position);
-	%trigger.setScale(%scale);
+	%trigger.setScale(vectorScale(%scale, %triggerMultiplier));
 
 	//tagged fields inside the constructor are being buggy?
 	%trigger.zoneIndex = %index;
@@ -115,12 +136,19 @@ function BTZ_createZone(%index, %position, %scale)
 
 	if($BTZ::Debug)
 	{
-		%shape = new StaticShape() {
-			position = %position;
-			scale = %scale;
-			dataBlock = "ND_SelectionBoxOuter";
-		};
-		%shape.setNodeColor("ALL","0 0 1 0.2");
+		if(%triggerMultiplier != 1)
+		{
+			%shape = new StaticShape() {
+				position = %position;
+				scale = %scale;
+				dataBlock = "ND_SelectionBoxOuter";
+			};
+			%shape.setNodeColor("ALL","0 0 1 0.2");
+		}
+		
+		if(isFunction("Trigger", "setNetFlag"))
+			%trigger.setNetFlag(8, true);
+
 		BTZ_DebugSet.add(%shape);
 	}
 
@@ -145,7 +173,7 @@ function BTZ_createZone(%index, %position, %scale)
 	}
 }
 
-function BTZ_addZone(%position, %scale)
+function BTZ_addZone(%position, %scale, %triggerMultiplier)
 {
 	%index = $BTZ::NumZones + 0;
 	talk("ADDED NODE #" @ %index);
@@ -153,7 +181,10 @@ function BTZ_addZone(%position, %scale)
 	$BTZ::ZonePos[%index] = %position;
 	$BTZ::ZoneScale[%index] = %scale;
 
-	BTZ_createZone(%index, %position, %scale);
+	%triggerMultiplier = mClampF(%triggerMultiplier, 1.0, 10000.0);
+	$BTZ::triggerMultiplier[%index] = %triggerMultiplier;
+
+	BTZ_createZone(%index, %position, %scale, %triggerMultiplier);
 
 	$BTZ::NumZones++;
 }
@@ -173,12 +204,9 @@ function BTZ_removeZone(%index)
 	}
 	%set.delete();
 
-	$BTZ::NumZones--;
-	%farIndex = $BTZ::NumZones - 1;
+	%farIndex = $BTZ::NumZones--;
 
-	if($BTZ::NumZones < 0)
-		$BTZ::NumZones = 0;
-
+	//do a swap, the deleted zoneindex with the last zone
 	if(%farIndex >= 0 && %index != %farIndex) //if we are not at the end of the array
 	{
 		$BTZ::ZoneObj[%index] = $BTZ::ZoneObj[%farIndex];
@@ -186,12 +214,15 @@ function BTZ_removeZone(%index)
 
 		$BTZ::ZonePos[%index] = $BTZ::ZonePos[%farIndex];
 		$BTZ::ZoneScale[%index] = $BTZ::ZoneScale[%farIndex];
+
+		$BTZ::triggerMultiplier[%index] = $BTZ::triggerMultiplier[%farIndex];
 	}
 
 	$BTZ::ZoneObj[%farIndex] = "";
 	$BTZ::ZoneSet[%farIndex] = "";
 	$BTZ::ZonePos[%farIndex] = "";
 	$BTZ::ZoneScale[%farIndex] = "";
+	$BTZ::triggerMultiplier[%farIndex] = "";
 }
 
 function BTZ_DeleteZone(%position, %scale)

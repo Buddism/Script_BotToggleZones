@@ -16,7 +16,7 @@ function BotToggleTriggerData::onEnterTrigger(%this, %trigger, %obj)
 
 	%index = %trigger.zoneIndex;
 	if($BTZ::ZoneObj[%index] != %trigger)
-		return talk(bad);
+		return talk(bad SPC %trigger);
 
 	%set = $BTZ::ZoneSet[%index];
 	%count = %set.getCount();
@@ -29,7 +29,7 @@ function BotToggleTriggerData::onEnterTrigger(%this, %trigger, %obj)
 	}
 
 	%trigger.occupants.add(%client);
-	%client.bottomprint("enter", 1);
+	%client.bottomprint("enter" SPC %index, 3);
 }
 
 function BotToggleTriggerData::onLeaveTrigger(%this, %trigger, %obj)
@@ -40,7 +40,7 @@ function BotToggleTriggerData::onLeaveTrigger(%this, %trigger, %obj)
 
 	%index = %trigger.zoneIndex;
 	if($BTZ::ZoneObj[%index] != %trigger)
-		return talk(bad);
+		return talk(bad SPC %trigger);
 
 	%set = $BTZ::ZoneSet[%index];
 	%count = %set.getCount();
@@ -53,5 +53,5 @@ function BotToggleTriggerData::onLeaveTrigger(%this, %trigger, %obj)
 	}
 
 	%trigger.occupants.remove(%client);
-	%client.bottomprint("leave", 1);
+	%client.bottomprint("leave" SPC %index, 3);
 }

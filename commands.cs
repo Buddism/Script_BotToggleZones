@@ -1,7 +1,15 @@
-function serverCmdBTZ(%client, %operator, %o1, %o2, %o3, %o4, %o5)
+function serverCmdBTZ(%client, %operator, %arg1, %arg2, %arg3, %arg4, %arg5)
 {
 	if(!%client.isAdmin)
 		return;
+
+	if(%operator $= "")
+	{
+		%client.chatMessage("\c6invalid operator");
+		%client.chatMessage("\c6ops: save, load, deleteAll, debug, Place (p) arg: >1 is size, Delete (d)");
+		return;
+	}
+	
 
 	switch$(%operator)
 	{
@@ -20,7 +28,7 @@ function serverCmdBTZ(%client, %operator, %o1, %o2, %o3, %o4, %o5)
 		default:
 			%noOperator = true;
 	}
-	
+
 	if(!%noOperator)
 		return;
 
@@ -36,13 +44,9 @@ function serverCmdBTZ(%client, %operator, %o1, %o2, %o3, %o4, %o5)
 	switch$(%operator)
 	{
 		case "Place" or "P":
-			BTZ_addZone(%position, %scale);
+			BTZ_addZone(%position, %scale, %arg1);
 
 		case "Delete" or "D":
 			BTZ_DeleteZone(%position, vectorSub(%scale, "0.05 0.05 0.05"));
-
-		default:
-			%client.chatMessage("\c6invalid operator");
-			%client.chatMessage("\c6ops: save, load, deleteAll, debug, Place (p), Delete (d)");
 	}
 }
