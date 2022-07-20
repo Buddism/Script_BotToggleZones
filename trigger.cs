@@ -25,16 +25,26 @@ function BotToggleTriggerData::onEnterTrigger(%this, %trigger, %obj)
 		%obj = %set.getObject(%i);
 
 		if(isObject(%obj.hBot))
+		{
 			%obj.hBot.scopeToClient(%client);
+
+			if(%obj.hBot.numScopes == 0)
+				%obj.hBot.setNetFlag(1, 0); //enable state
+
+			%obj.hBot.numScopes++;
+		}
 	}
 
 	%trigger.occupants.add(%client);
-	%client.bottomprint("enter" SPC %index, 3);
+
+	if($BTZ::Debug)
+		%client.bottomprint("enter" SPC %index, 3);
 }
 
 function BotToggleTriggerData::onLeaveTrigger(%this, %trigger, %obj)
 {
 	%client = %obj.client;
+	talk(leave SPC %obj SPC %client);
 	if(!isObject(%client) || %client.getClassName() !$= "GameConnection")
 		return;
 
@@ -49,9 +59,16 @@ function BotToggleTriggerData::onLeaveTrigger(%this, %trigger, %obj)
 		%obj = %set.getObject(%i);
 
 		if(isObject(%obj.hBot))
+		{
 			%obj.hBot.clearScopeToClient(%client);
+
+			if(%obj.hBot.numScopes-- <= 0)
+				%obj.hBot.setNetFlag(1, 1); //disable state
+		}
 	}
 
 	%trigger.occupants.remove(%client);
-	%client.bottomprint("leave" SPC %index, 3);
+
+	if($BTZ::Debug)
+		%client.bottomprint("leave" SPC %index, 3);
 }

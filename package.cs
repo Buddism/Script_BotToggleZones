@@ -32,8 +32,14 @@ package Script_BotToggleZones
 
 			%set = $BTZ::ZoneObj[%index].occupants;
 			%count = %set.getCount();
+			if(%count == 0)
+				%parent.setNetFlag(1, 1); //disable state
+
+
 			for(%i = 0; %i < %count; %i++)
 				%parent.scopeToClient(%set.getObject(%i));
+
+			%parent.numScopes = %count;
 		}
 
 		return %parent;
