@@ -175,7 +175,18 @@ function BTZ_createZone(%index, %position, %scale, %triggerMultiplier)
 
 function BTZ_addZone(%position, %scale, %triggerMultiplier)
 {
-	%index = $BTZ::NumZones + 0;
+	%index = -1;
+	for(%i = 0; %i < $BTZ::NumZones; %i++)
+		if(!isObject($BTZ::ZoneObj[%i]))
+		{
+			%index = %i;
+			break;
+		}
+	if(%index == -1)
+	{
+		%index = $BTZ::NumZones + 0;
+		$BTZ::NumZones++;
+	}	
 	talk("ADDED NODE #" @ %index);
 
 	$BTZ::ZonePos[%index] = %position;
@@ -185,8 +196,6 @@ function BTZ_addZone(%position, %scale, %triggerMultiplier)
 	$BTZ::triggerMultiplier[%index] = %triggerMultiplier;
 
 	BTZ_createZone(%index, %position, %scale, %triggerMultiplier);
-
-	$BTZ::NumZones++;
 }
 
 function BTZ_removeZone(%index)

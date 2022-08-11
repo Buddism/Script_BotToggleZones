@@ -29,7 +29,9 @@ function BotToggleTriggerData::onEnterTrigger(%this, %trigger, %obj)
 	}
 
 	%trigger.occupants.add(%client);
-	%client.bottomprint("enter" SPC %index, 3);
+	
+	if($BTZ::Debug)
+		%client.bottomprint("enter" SPC %index, 3);
 }
 
 function BotToggleTriggerData::onLeaveTrigger(%this, %trigger, %obj)
@@ -53,5 +55,7 @@ function BotToggleTriggerData::onLeaveTrigger(%this, %trigger, %obj)
 	}
 
 	%trigger.occupants.remove(%client);
-	%client.bottomprint("leave" SPC %index, 3);
+
+	if($BTZ::Debug)
+		%client.bottomprint("leave" SPC %index, 3);
 }
