@@ -2,6 +2,7 @@ exec("./trigger.cs");
 exec("./commands.cs");
 exec("./support.cs");
 exec("./package.cs");
+exec("./events.cs");
 
 $BTZ::SavePath = "config/server/BotToggleZones.cs";
 
@@ -251,3 +252,5 @@ function BTZ_DeleteZone(%position, %scale)
 		}
 	}
 }
+
+

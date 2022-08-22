@@ -32,8 +32,8 @@ package Script_BotToggleZones
 
 			%set = $BTZ::ZoneObj[%index].occupants;
 			%count = %set.getCount();
-			if(%count == 0)
-				%parent.setNetFlag(1, 1); //disable state
+			if(%count == 0) //no occupants
+				%parent.setProcessingEnabled(false);
 
 
 			for(%i = 0; %i < %count; %i++)
