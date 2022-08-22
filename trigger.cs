@@ -36,7 +36,7 @@ function BotToggleTriggerData::onEnterTrigger(%this, %trigger, %obj)
 	}
 
 	%trigger.occupants.add(%client);
-
+	
 	if($BTZ::Debug)
 		%client.bottomprint("enter" SPC %index, 3);
 }
