@@ -33,7 +33,7 @@ package Script_BotToggleZones
 			%set = $BTZ::ZoneObj[%index].occupants;
 			%count = %set.getCount();
 			if(%count == 0) //no occupants
-				%parent.setProcessingEnabled(false);
+				%obj.BTZ_setBotDisabled(trie);
 
 
 			for(%i = 0; %i < %count; %i++)

@@ -18,6 +18,9 @@ function BotToggleTriggerData::onEnterTrigger(%this, %trigger, %obj)
 	if($BTZ::ZoneObj[%index] != %trigger)
 		return talk(bad SPC %trigger);
 
+	%trigger.occupants.add(%client);
+	%occupancy = %trigger.occupants.getCount();
+
 	%set = $BTZ::ZoneSet[%index];
 	%count = %set.getCount();
 	for(%i = 0; %i < %count; %i++)
@@ -28,14 +31,12 @@ function BotToggleTriggerData::onEnterTrigger(%this, %trigger, %obj)
 		{
 			%obj.hBot.scopeToClient(%client);
 
-			if(%obj.hBot.numScopes == 0)
-				%obj.hBot.setProcessingEnabled(true);
+			if(%occupancy == 1)
+				%obj.BTZ_setBotEnabled();
 
 			%obj.hBot.numScopes++;
 		}
 	}
-
-	%trigger.occupants.add(%client);
 	
 	if($BTZ::Debug)
 		%client.bottomprint("enter" SPC %index, 3);
@@ -51,6 +52,9 @@ function BotToggleTriggerData::onLeaveTrigger(%this, %trigger, %obj)
 	if($BTZ::ZoneObj[%index] != %trigger)
 		return talk(bad SPC %trigger);
 
+	%trigger.occupants.remove(%client);
+	%occupancy = %trigger.occupants.getCount();
+	
 	%set = $BTZ::ZoneSet[%index];
 	%count = %set.getCount();
 	for(%i = 0; %i < %count; %i++)
@@ -61,12 +65,10 @@ function BotToggleTriggerData::onLeaveTrigger(%this, %trigger, %obj)
 		{
 			%obj.hBot.clearScopeToClient(%client);
 
-			if(%obj.hBot.numScopes-- <= 0)
-				%obj.hBot.setProcessingEnabled(false);
+			if(%occupancy == 0)
+				%obj.BTZ_setBotDisabled();
 		}
 	}
-
-	%trigger.occupants.remove(%client);
 
 	if($BTZ::Debug)
 		%client.bottomprint("leave" SPC %index, 3);

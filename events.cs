@@ -1,4 +1,10 @@
-function AIPlayer::setProcessingEnabled(%this, %isClientObject)
+function fxDTSBrick::BTZ_setBotDisabled(%this, %disabled)
 {
-	%this.setNetFlag(1, !%isClientObject);
+	if(isObject(%this.hbot))
+		%this.delete();
+}
+
+function fxDTSBrick::BTZ_setBotEnabled(%this)
+{
+	%this.spawnHoleBot();
 }
