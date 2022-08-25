@@ -38,8 +38,6 @@ package Script_BotToggleZones
 
 			for(%i = 0; %i < %count; %i++)
 				%parent.scopeToClient(%set.getObject(%i));
-
-			%parent.numScopes = %count;
 		}
 
 		return %parent;
