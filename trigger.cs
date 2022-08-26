@@ -27,7 +27,7 @@ function BotToggleTriggerData::onEnterTrigger(%this, %trigger, %obj)
 	{
 		%obj = %set.getObject(%i);
 		
-		if(%occupancy == 1) //need to spawn the bots
+		if(%occupancy == 1 && %obj.BTZ_CanDespawn) //need to spawn the bots
 			%obj.BTZ_setBotEnabled();
 
 		if(isObject(%obj.hBot))
@@ -61,7 +61,7 @@ function BotToggleTriggerData::onLeaveTrigger(%this, %trigger, %obj)
 		{
 			%obj.hBot.clearScopeToClient(%client);
 
-			if(%occupancy == 0) //nobody is left in the trigger, despawn the bots
+			if(%occupancy == 0 && %obj.BTZ_CanDespawn) //nobody is left in the trigger, despawn the bots
 				%obj.BTZ_setBotDisabled();
 		}
 	}
